@@ -1,31 +1,31 @@
-import { Command, Option } from 'nest-commander';
-import {
-  getUtxos,
-  OpenMinterTokenInfo,
-  getTokenMinter,
-  logerror,
-  getTokenMinterCount,
-  isOpenMinter,
-  sleep,
-  needRetry,
-  unScaleByDecimals,
-  getTokens,
-  btc,
-  TokenMetadata,
-} from 'src/common';
-import { openMint } from './ft.open-minter';
-import { ConfigService, SpendService, WalletService } from 'src/providers';
 import { Inject } from '@nestjs/common';
 import { log } from 'console';
-import { findTokenMetadataById, scaleConfig } from 'src/token';
 import Decimal from 'decimal.js';
+import { Command, Option } from 'nest-commander';
+import {
+  btc,
+  getTokenMinter,
+  getTokenMinterCount,
+  getTokens,
+  getUtxos,
+  isOpenMinter,
+  logerror,
+  needRetry,
+  OpenMinterTokenInfo,
+  sleep,
+  TokenMetadata,
+  unScaleByDecimals,
+} from 'src/common';
+import { ConfigService, SpendService, WalletService } from 'src/providers';
+import { findTokenMetadataById, scaleConfig } from 'src/token';
 import {
   BoardcastCommand,
   BoardcastCommandOptions,
 } from '../boardcast.command';
-import { broadcastMergeTokenTxs, mergeTokens } from '../send/merge';
 import { calcTotalAmount, sendToken } from '../send/ft';
+import { broadcastMergeTokenTxs, mergeTokens } from '../send/merge';
 import { pickLargeFeeUtxo } from '../send/pick';
+import { openMint } from './ft.open-minter';
 interface MintCommandOptions extends BoardcastCommandOptions {
   id: string;
   new?: number;
@@ -84,14 +84,25 @@ export class MintCommand extends BoardcastCommand {
         const MAX_RETRY_COUNT = 10;
 
         for (let index = 0; index < MAX_RETRY_COUNT; index++) {
-          await this.merge(token, address);
-          const feeRate = await this.getFeeRate();
+          // await this.merge(token, address);
+          let feeRate: number;
+          if (passedParams[1]) {
+            feeRate = parseInt(passedParams[1], 10);
+            if (feeRate == 0) {
+              feeRate = await this.getFeeRate();
+            }
+          } else {
+            feeRate = await this.getFeeRate();
+          }
+          console.log('feeRate', feeRate);
+
           const feeUtxos = await this.getFeeUTXOs(address);
           if (feeUtxos.length === 0) {
             console.warn('Insufficient satoshis balance!');
             return;
           }
 
+          console.log('to getTokenMinterCount...');
           const count = await getTokenMinterCount(
             this.configService,
             token.tokenId,
@@ -104,6 +115,7 @@ export class MintCommand extends BoardcastCommand {
             return;
           }
 
+          console.log('to getTokenMinter...');
           const offset = getRandomInt(count - 1);
           const minter = await getTokenMinter(
             this.configService,
@@ -150,13 +162,14 @@ export class MintCommand extends BoardcastCommand {
               feeRate,
               feeUtxos,
               token,
-              2,
+              1,
               minter,
               amount,
             );
 
             if (mintTxIdOrErr instanceof Error) {
-              if (needRetry(mintTxIdOrErr)) {
+              if (needRetry(mintTxIdOrErr as any)) {
+                console.log(mintTxIdOrErr.message);
                 // throw these error, so the caller can handle it.
                 log(`retry to mint token [${token.info.symbol}] ...`);
                 await sleep(6);
@@ -164,7 +177,7 @@ export class MintCommand extends BoardcastCommand {
               } else {
                 logerror(
                   `mint token [${token.info.symbol}] failed`,
-                  mintTxIdOrErr,
+                  mintTxIdOrErr as any,
                 );
                 return;
               }

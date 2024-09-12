@@ -1,11 +1,12 @@
 // eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-ignore
 import btc = require('bitcore-lib-inquisition');
-import * as bip39 from 'bip39';
-import BIP32Factory from 'bip32';
-import * as ecc from 'tiny-secp256k1';
 import { Inject, Injectable } from '@nestjs/common';
+import BIP32Factory from 'bip32';
+import * as bip39 from 'bip39';
 import { existsSync, readFileSync, writeFileSync } from 'fs';
+import { join } from 'path';
+import { hash160 } from 'scrypt-ts';
 import {
   AddressType,
   logerror,
@@ -14,9 +15,8 @@ import {
   toXOnly,
   Wallet,
 } from 'src/common';
+import * as ecc from 'tiny-secp256k1';
 import { ConfigService } from './configService';
-import { join } from 'path';
-import { hash160 } from 'scrypt-ts';
 
 const bip32 = BIP32Factory(ecc);
 
@@ -55,9 +55,10 @@ export class WalletService {
     }
   }
 
-  loadWallet(): Wallet | null {
+  loadWallet(walletName: string): Wallet | null {
     const dataDir = this.configService.getDataDir();
-    const walletFile = join(dataDir, 'wallet.json');
+    console.log('wallet', walletName);
+    const walletFile = join(dataDir, `${walletName}.json`);
     let walletString = null;
 
     try {
@@ -218,9 +219,9 @@ export class WalletService {
     }
   }
 
-  createWallet(wallet: Wallet): Error | null {
+  createWallet(wallet: Wallet, walletName: string): Error | null {
     const dataDir = this.configService.getDataDir();
-    const walletFile = join(dataDir, 'wallet.json');
+    const walletFile = join(dataDir, `${walletName}.json`);
     try {
       writeFileSync(walletFile, JSON.stringify(wallet, null, 2));
       this.wallet = wallet;
@@ -256,9 +257,9 @@ export class WalletService {
     return true;
   }
 
-  foundWallet(): string | null {
+  foundWallet(walletName: string): string | null {
     const dataDir = this.configService.getDataDir();
-    const walletFile = join(dataDir, 'wallet.json');
+    const walletFile = join(dataDir, `${walletName}.json`);
     let walletString = null;
 
     try {

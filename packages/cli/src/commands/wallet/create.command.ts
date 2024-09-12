@@ -1,10 +1,10 @@
-import { Option, InquirerService, SubCommand } from 'nest-commander';
-import { BaseCommand, BaseCommandOptions } from '../base.command';
-import { logerror, Wallet } from 'src/common';
-import { ConfigService, WalletService } from 'src/providers';
 import { Inject } from '@nestjs/common';
-import { randomBytes } from 'crypto';
 import * as bip39 from 'bip39';
+import { randomBytes } from 'crypto';
+import { InquirerService, Option, SubCommand } from 'nest-commander';
+import { log, logerror, Wallet } from 'src/common';
+import { ConfigService, WalletService } from 'src/providers';
+import { BaseCommand, BaseCommandOptions } from '../base.command';
 
 interface CreateCommandOptions extends BaseCommandOptions {
   name: string;
@@ -29,7 +29,9 @@ export class CreateCommand extends BaseCommand {
     options?: CreateCommandOptions,
   ): Promise<void> {
     try {
-      const walletFile = this.walletService.foundWallet();
+      const walletName = inputs[0];
+
+      const walletFile = this.walletService.foundWallet(walletName);
       if (walletFile !== null) {
         logerror(`found an existing wallet: ${walletFile}`, new Error());
         return;
@@ -45,9 +47,11 @@ export class CreateCommand extends BaseCommand {
         mnemonic: bip39.generateMnemonic(),
       };
 
-      this.walletService.createWallet(wallet);
+      this.walletService.createWallet(wallet, walletName);
 
       console.log('Your wallet mnemonic is: ', wallet.mnemonic);
+      console.log('Your address0 wif is: ', this.walletService.getWif());
+      log(`Your address0 is ${this.walletService.getAddress()}`);
 
       console.log('exporting address to the RPC node ... ');
 

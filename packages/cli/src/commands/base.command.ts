@@ -1,10 +1,11 @@
 import { accessSync, constants } from 'fs';
-import { Option, CommandRunner } from 'nest-commander';
+import { CommandRunner, Option } from 'nest-commander';
 import { CliConfig, logerror, resolveConfigPath } from 'src/common';
 import { WalletService } from 'src/providers';
 import { ConfigService } from 'src/providers/configService';
 import { URL } from 'url';
 export interface BaseCommandOptions {
+  wallet?: string;
   config?: string;
   network?: string;
   tracker?: string;
@@ -45,7 +46,8 @@ export abstract class BaseCommand extends CommandRunner {
     this.configService.mergeCliConfig(cliConfig);
 
     if (this.autoLoadWallet) {
-      const wallet = this.walletService.loadWallet();
+      // console.log('passedParams', passedParams);
+      const wallet = this.walletService.loadWallet(options.wallet);
 
       if (wallet === null) {
         return;
@@ -115,6 +117,14 @@ export abstract class BaseCommand extends CommandRunner {
     }
 
     return cliConfig as CliConfig;
+  }
+
+  @Option({
+    flags: '-w, --wallet [walletName]',
+    description: 'Wallet name',
+  })
+  parseWalletName(val: string): string {
+    return val;
   }
 
   @Option({
