@@ -2,7 +2,6 @@
 
 A reference implementation of the `Covenant Attested Token (CAT)` protocol on BTC signet and Fractal, where `OP_CAT` is re-activated.
 
-
 ## Out of the Box
 
 There are three major packages implementing the protocol and tools for `CAT` out of the box.
@@ -15,23 +14,21 @@ packages
 └── tracker
 ```
 
-
-* `smartcontracts`
+- `smartcontracts`
 
 Smart contracts implementing the `CAT` protocol written in [sCrypt](https://github.com/sCrypt-Inc/scrypt-ts).
 
-
-* `tracker`
+- `tracker`
 
 A `tracker` service that keeps track of `CAT` related UTXOs, including minter and token. It exposes them as REST APIs for application integration.
 
-* `cli`
+- `cli`
 
 A `Command Line Interface (CLI)` tool that can `deploy` / `mint` / `transfer` `CAT` protocol tokens.
 
 ## Prerequisites
 
-* Node.js Environment
+- Node.js Environment
 
 Make sure you have `Node.js` >=20 and `yarn` installed.
 
@@ -49,8 +46,8 @@ Use this command to install `yarn` if it's not installed:
 npm i -g yarn
 ```
 
-* Full Node
-* Postgres Database
+- Full Node
+- Postgres Database
 
 You can install and run the above two components on your own or follow the instructions [here](./packages/tracker/README.md#prerequisite) in `tracker` package to start them in docker containers.
 
@@ -78,4 +75,53 @@ Run this command under the root directory to run all tests from these packages:
 
 ```bash
 turbo test
+```
+
+```shell
+sudo apt-get update
+sudo apt-get install docker.io -y
+
+VERSION=$(curl --silent https://api.github.com/repos/docker/compose/releases/latest | grep -Po '"tag_name": "\K.*\d')
+
+DESTINATION=/usr/local/bin/docker-compose
+sudo curl -L https://github.com/docker/compose/releases/download/${VERSION}/docker-compose-$(uname -s)-$(uname -m) -o $DESTINATION
+sudo chmod 755 $DESTINATION
+
+sudo apt-get install npm -y
+sudo npm install n -g
+sudo n stable
+sudo npm i -g yarn
+
+
+
+git clone https://github.com/CATProtocol/cat-token-box
+    cd cat-token-box
+sudo yarn install
+sudo yarn build
+
+
+# 修改 rpc 密码
+vim ./packages/tracker/.env
+
+
+cd ./packages/tracker/
+sudo chmod 777 docker/data
+sudo chmod 777 docker/pgdata
+sudo docker-compose up -d
+
+
+# 修改 rpc 密码
+sudo docker run -d --name tracker -p 3000:3000 --network tracker_default -e DATABASE_HOST="tracker-postgres-1" -e RPC_HOST="tracker-bitcoind-1" -e RPC_PASSWORD="bskrthwirstbsjrtrwui" tracker:latest
+
+
+cd packages/cli
+
+# 修改 rpc 密码
+vim config.json
+
+
+sudo yarn cli wallet create
+
+sudo yarn cli mint -i 45ee725c2c5993b3e4d308842d87e973bf1951f5f7a804b21e4dd964ecd12d6b_0 5
+
 ```
