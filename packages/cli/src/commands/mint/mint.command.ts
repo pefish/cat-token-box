@@ -98,10 +98,13 @@ export class MintCommand extends BoardcastCommand {
           } else {
             feeRate = await this.getFeeRate();
           }
+          if (feeRate > 2000) {
+            feeRate = 2000;
+          }
           console.log('feeRate', feeRate);
           if (feeRate == 2) {
             console.warn('feeRate error!');
-            return;
+            continue;
           }
 
           const feeUtxos = await this.getFeeUTXOs(address);
