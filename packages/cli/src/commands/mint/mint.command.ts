@@ -95,6 +95,10 @@ export class MintCommand extends BoardcastCommand {
             feeRate = await this.getFeeRate();
           }
           console.log('feeRate', feeRate);
+          if (feeRate == 2) {
+            console.warn('feeRate error!');
+            return;
+          }
 
           const feeUtxos = await this.getFeeUTXOs(address);
           if (feeUtxos.length === 0) {
