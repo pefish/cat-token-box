@@ -166,7 +166,7 @@ export class MintCommand extends BoardcastCommand {
                   ? minter.state.data.remainingSupply
                   : amount;
             }
-            console.error(`amount: ${amount}!`);
+            console.log(`amount: ${amount}!`);
 
             console.log('to openMint...');
             const { txidOrError: mintTxIdOrErr } = await openMint(
