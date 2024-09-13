@@ -197,13 +197,8 @@ export async function openMint(
 
   const genesisId = outpoint2ByteString(metadata.tokenId);
 
-  console.log(`preState: ${JSON.stringify(preState, null, 2)}`);
+  // console.log(`preState: ${JSON.stringify(preState, null, 2)}`);
   const newState = ProtocolState.getEmptyState();
-  if (preState.remainingSupply < 500) {
-    return {
-      txidOrError: new Error('碎片'),
-    };
-  }
   const { splitAmountList, minterStates } = createOpenMinterState(
     mintAmount,
     preState.isPremined,

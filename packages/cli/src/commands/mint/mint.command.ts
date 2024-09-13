@@ -80,7 +80,7 @@ export class MintCommand extends BoardcastCommand {
           }
         }
 
-        const MAX_RETRY_COUNT = 10;
+        const MAX_RETRY_COUNT = 100;
 
         for (let index = 0; index < MAX_RETRY_COUNT; index++) {
           // await this.merge(token, address);
@@ -113,13 +113,13 @@ export class MintCommand extends BoardcastCommand {
           // console.log(`minter count: ${count}`);
 
           console.log('to getTokenMinter...');
-          const offset = getRandomInt(250000);
-          console.log(`offset: ${offset}`);
+          // const offset = getRandomInt(250000);
+          // console.log(`offset: ${offset}`);
           const minter = await getTokenMinter(
             this.configService,
             this.walletService,
             token,
-            offset,
+            index,
           );
 
           if (minter == null) {
@@ -131,6 +131,11 @@ export class MintCommand extends BoardcastCommand {
             const minterState = minter.state.data;
             if (minterState.isPremined && amount > scaledInfo.limit) {
               console.error('The number of minted tokens exceeds the limit!');
+              return;
+            }
+
+            if (minterState.remainingSupply < 500) {
+              console.error('碎片!');
               return;
             }
 
