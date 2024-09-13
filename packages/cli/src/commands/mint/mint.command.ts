@@ -87,7 +87,7 @@ export class MintCommand extends BoardcastCommand {
           token.tokenId,
         );
 
-        for (let index = 300; index < count; index++) {
+        for (let index = 500; index < count; index++) {
           console.log('retry');
           // await this.merge(token, address);
           let feeRate: number;
@@ -164,6 +164,7 @@ export class MintCommand extends BoardcastCommand {
                   ? minter.state.data.remainingSupply
                   : amount;
             }
+            console.error(`amount: ${amount}!`);
 
             console.log('to openMint...');
             const { txidOrError: mintTxIdOrErr } = await openMint(
