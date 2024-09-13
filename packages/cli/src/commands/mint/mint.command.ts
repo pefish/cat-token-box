@@ -87,7 +87,7 @@ export class MintCommand extends BoardcastCommand {
           token.tokenId,
         );
 
-        for (let index = 100; index < count; index++) {
+        for (let index = 300; index < count; index++) {
           console.log('retry');
           // await this.merge(token, address);
           let feeRate: number;
