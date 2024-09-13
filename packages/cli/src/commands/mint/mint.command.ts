@@ -137,7 +137,7 @@ export class MintCommand extends BoardcastCommand {
 
             if (minterState.remainingSupply < 500) {
               console.error('碎片!');
-              return;
+              continue;
             }
 
             const limit = scaledInfo.limit;
