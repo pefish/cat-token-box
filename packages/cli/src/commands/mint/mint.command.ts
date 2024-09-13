@@ -12,7 +12,6 @@ import {
   logerror,
   needRetry,
   OpenMinterTokenInfo,
-  sleep,
   TokenMetadata,
   unScaleByDecimals,
 } from 'src/common';
@@ -185,7 +184,6 @@ export class MintCommand extends BoardcastCommand {
                 console.log(mintTxIdOrErr.message);
                 // throw these error, so the caller can handle it.
                 log(`retry to mint token [${token.info.symbol}] ...`);
-                await sleep(6);
                 continue;
               } else {
                 logerror(
