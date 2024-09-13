@@ -83,6 +83,7 @@ export class MintCommand extends BoardcastCommand {
         const MAX_RETRY_COUNT = 100;
 
         for (let index = 0; index < MAX_RETRY_COUNT; index++) {
+          console.log('retry');
           // await this.merge(token, address);
           let feeRate: number;
           if (passedParams[1]) {
@@ -183,7 +184,7 @@ export class MintCommand extends BoardcastCommand {
                   `mint token [${token.info.symbol}] failed`,
                   mintTxIdOrErr as any,
                 );
-                return;
+                continue;
               }
             }
 
