@@ -167,7 +167,7 @@ export const rpc_getfeeRate = async function (
       jsonrpc: '2.0',
       id: 'cat-cli',
       method: 'estimatesmartfee',
-      params: [1],
+      params: [10],
     }),
   })
     .then((res) => {
