@@ -5,6 +5,7 @@ import { Command, Option } from 'nest-commander';
 import {
   btc,
   getTokenMinter,
+  getTokenMinterCount,
   getTokens,
   getUtxos,
   isOpenMinter,
@@ -101,15 +102,16 @@ export class MintCommand extends BoardcastCommand {
             return;
           }
 
-          // console.log('to getTokenMinterCount...');
-          // const count = await getTokenMinterCount(
-          //   this.configService,
-          //   token.tokenId,
-          // );
-          // console.log(`minter count: ${count}`);
+          console.log('to getTokenMinterCount...');
+          const count = await getTokenMinterCount(
+            this.configService,
+            token.tokenId,
+          );
+          console.log(`minter count: ${count}`);
 
           console.log('to getTokenMinter...');
-          const offset = getRandomInt(10000);
+          const offset = getRandomInt(count - 1);
+          console.log(`offset: ${offset}`);
           const minter = await getTokenMinter(
             this.configService,
             this.walletService,
