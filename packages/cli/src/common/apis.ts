@@ -5,7 +5,6 @@ import { ConfigService, WalletService } from 'src/providers';
 import {
   rpc_broadcast,
   rpc_getconfirmations,
-  rpc_getfeeRate,
   rpc_getrawtransaction,
   rpc_listunspent,
 } from './apis-rpc';
@@ -14,16 +13,17 @@ import { logerror, logwarn } from './log';
 
 export const getFeeRate = async function (
   config: ConfigService,
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   wallet: WalletService,
 ): Promise<number> {
-  if (config.useRpc()) {
-    console.log(`从比特币节点获取费率...`);
-    const feeRate = await rpc_getfeeRate(config, wallet.getWalletName());
-    if (feeRate instanceof Error) {
-      return 2;
-    }
-    return feeRate;
-  }
+  // if (config.useRpc()) {
+  //   console.log(`从比特币节点获取费率...`);
+  //   const feeRate = await rpc_getfeeRate(config, wallet.getWalletName());
+  //   if (feeRate instanceof Error) {
+  //     return 2;
+  //   }
+  //   return feeRate;
+  // }
 
   const url = `${config.getApiHost()}/api/v1/fees/recommended`;
   console.log(`feerate url: ${url}`);
