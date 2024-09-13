@@ -68,6 +68,9 @@ export class OpenMinterProto extends SmartContractLib {
             const delta =
                 totalSplit - perMinterNumber * Int32(splitMinterNumber)
             splitAmount[0] = perMinterNumber + delta
+            console.log(
+                `totalSplit: ${totalSplit}, scale: ${scale}, perMinterNumber: ${perMinterNumber}, delta: ${delta}, splitAmount[0]: ${splitAmount[0]}`
+            )
             for (let i = 1; i < splitMinterNumber; i++) {
                 splitAmount[i] = perMinterNumber
             }
