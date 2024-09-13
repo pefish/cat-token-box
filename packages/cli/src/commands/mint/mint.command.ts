@@ -140,7 +140,7 @@ export class MintCommand extends BoardcastCommand {
               return;
             }
 
-            if (minterState.remainingSupply < 100) {
+            if (minterState.remainingSupply < 50) {
               console.error(
                 `碎片, remainingSupply: ${minterState.remainingSupply}!`,
               );
