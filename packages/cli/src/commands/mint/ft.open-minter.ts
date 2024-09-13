@@ -137,10 +137,14 @@ export function createOpenMinterState(
   splitAmountList: bigint[];
   minterStates: OpenMinterState[];
 } {
+  console.log(`token metadata: ${JSON.stringify(metadata)}`);
   const scaledInfo = scaleConfig(metadata.info as OpenMinterTokenInfo);
 
   const premine = !isPriemined ? scaledInfo.premine : 0n;
   const limit = scaledInfo.limit;
+  console.log(
+    `premine: ${premine}, remainingSupply: ${remainingSupply}, mintAmount: ${mintAmount}`,
+  );
   const splitAmountList = OpenMinterProto.getSplitAmountList(
     premine + remainingSupply,
     mintAmount,
@@ -172,7 +176,10 @@ export async function openMint(
   newMinter: number /* number of new minter utxo */,
   minterContract: OpenMinterContract,
   mintAmount: bigint,
-): Promise<string | Error> {
+): Promise<{
+  txidOrError: string | Error;
+  minterOutputs?: btc.Transaction.Output[];
+}> {
   const {
     utxo: minterUtxo,
     state: { protocolState, data: preState },
@@ -190,14 +197,16 @@ export async function openMint(
 
   const genesisId = outpoint2ByteString(metadata.tokenId);
 
+  console.log(`preState: ${JSON.stringify(preState)}`);
   const newState = ProtocolState.getEmptyState();
   const { splitAmountList, minterStates } = createOpenMinterState(
     mintAmount,
     preState.isPremined,
-    preState.remainingSupply,
+    preState.remainingSupply, // minter 中写的
     metadata,
     newMinter,
   );
+  console.log(`splitAmountList: ${JSON.stringify(splitAmountList)}`);
 
   for (let i = 0; i < minterStates.length; i++) {
     const minterState = minterStates[i];
@@ -227,7 +236,9 @@ export async function openMint(
 
     if (address instanceof Error) {
       logerror(`get premine address failed!`, address);
-      return address;
+      return {
+        txidOrError: address,
+      };
     }
 
     premineAddress = address;
@@ -251,6 +262,7 @@ export async function openMint(
   console.log(`utxos length: ${utxos.length}`);
   console.log(`minterUtxo: ${JSON.stringify(minterUtxo)}`);
   console.log(`feeUtxos: ${JSON.stringify(feeUtxos)}`);
+  console.log(`newState: ${JSON.stringify(newState)}`);
   const revealTx = new btc.Transaction()
     .from(utxos)
     .addOutput(
@@ -261,14 +273,15 @@ export async function openMint(
     )
     .enableRBF();
 
+  const minterOutputs: btc.Transaction.Output[] = [];
   for (let i = 0; i < splitAmountList.length; i++) {
     if (splitAmountList[i] > 0n) {
-      revealTx.addOutput(
-        new btc.Transaction.Output({
-          script: new btc.Script(minterUtxo.script),
-          satoshis: Postage.MINTER_POSTAGE,
-        }),
-      );
+      const mintOutput = new btc.Transaction.Output({
+        script: new btc.Script(minterUtxo.script),
+        satoshis: Postage.MINTER_POSTAGE,
+      });
+      minterOutputs.push(mintOutput);
+      revealTx.addOutput(mintOutput);
     }
   }
 
@@ -292,7 +305,10 @@ export async function openMint(
   const commitTxHex = await getRawTransaction(config, wallet, minterUtxo.txId);
   if (commitTxHex instanceof Error) {
     logerror(`get raw transaction ${minterUtxo.txId} failed!`, commitTxHex);
-    return commitTxHex;
+    return {
+      txidOrError: commitTxHex,
+      minterOutputs: minterOutputs,
+    };
   }
 
   const commitTx = new btc.Transaction(commitTxHex);
@@ -302,7 +318,10 @@ export async function openMint(
   const prevPrevTxHex = await getRawTransaction(config, wallet, prevPrevTxId);
   if (prevPrevTxHex instanceof Error) {
     logerror(`get raw transaction ${prevPrevTxId} failed!`, prevPrevTxHex);
-    return prevPrevTxHex;
+    return {
+      txidOrError: prevPrevTxHex,
+      minterOutputs: minterOutputs,
+    };
   }
 
   const prevPrevTx = new btc.Transaction(prevPrevTxHex);
@@ -344,7 +363,10 @@ export async function openMint(
 
   if (changeAmount < 546) {
     const message = 'Insufficient satoshis balance!';
-    return new Error(message);
+    return {
+      txidOrError: new Error(message),
+      minterOutputs: minterOutputs,
+    };
   }
 
   // update change amount
@@ -406,7 +428,10 @@ export async function openMint(
     );
     if (typeof res === 'string') {
       console.log('unlocking minter failed:', res);
-      return new Error('unlocking minter failed');
+      return {
+        txidOrError: new Error('unlocking minter failed'),
+        minterOutputs: minterOutputs,
+      };
     }
   }
 
@@ -416,8 +441,14 @@ export async function openMint(
 
   if (res instanceof Error) {
     //logerror('broadcast tx failed!', res);
-    return res;
+    return {
+      txidOrError: res,
+      minterOutputs: minterOutputs,
+    };
   }
   spendService.updateSpends(revealTx);
-  return res;
+  return {
+    txidOrError: res,
+    minterOutputs: minterOutputs,
+  };
 }

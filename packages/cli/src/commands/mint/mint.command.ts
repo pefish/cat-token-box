@@ -5,7 +5,6 @@ import { Command, Option } from 'nest-commander';
 import {
   btc,
   getTokenMinter,
-  getTokenMinterCount,
   getTokens,
   getUtxos,
   isOpenMinter,
@@ -29,10 +28,6 @@ import { openMint } from './ft.open-minter';
 interface MintCommandOptions extends BoardcastCommandOptions {
   id: string;
   new?: number;
-}
-
-function getRandomInt(max: number) {
-  return Math.floor(Math.random() * max);
 }
 
 @Command({
@@ -102,31 +97,18 @@ export class MintCommand extends BoardcastCommand {
             return;
           }
 
-          console.log('to getTokenMinterCount...');
-          const count = await getTokenMinterCount(
-            this.configService,
-            token.tokenId,
-          );
-
-          const maxTry = count < MAX_RETRY_COUNT ? count : MAX_RETRY_COUNT;
-
-          if (count == 0 && index >= maxTry) {
-            console.error('No available minter UTXO found!');
-            return;
-          }
-
           console.log('to getTokenMinter...');
-          const offset = getRandomInt(count - 1);
           const minter = await getTokenMinter(
             this.configService,
             this.walletService,
             token,
-            offset,
+            5,
           );
 
           if (minter == null) {
             continue;
           }
+          console.log(`minter: ${JSON.stringify(minter)}`);
 
           if (isOpenMinter(token.info.minterMd5)) {
             const minterState = minter.state.data;
@@ -156,7 +138,7 @@ export class MintCommand extends BoardcastCommand {
             }
 
             console.log('to openMint...');
-            const mintTxIdOrErr = await openMint(
+            const { txidOrError: mintTxIdOrErr } = await openMint(
               this.configService,
               this.walletService,
               this.spendService,
@@ -167,7 +149,6 @@ export class MintCommand extends BoardcastCommand {
               minter,
               amount,
             );
-
             if (mintTxIdOrErr instanceof Error) {
               if (needRetry(mintTxIdOrErr as any)) {
                 console.log(mintTxIdOrErr.message);
