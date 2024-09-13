@@ -17,6 +17,7 @@ export const getFeeRate = async function (
   wallet: WalletService,
 ): Promise<number> {
   if (config.useRpc()) {
+    console.log(`从比特币节点获取费率...`);
     const feeRate = await rpc_getfeeRate(config, wallet.getWalletName());
     if (feeRate instanceof Error) {
       return 2;
