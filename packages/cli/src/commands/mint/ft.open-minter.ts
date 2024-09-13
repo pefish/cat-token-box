@@ -249,6 +249,8 @@ export async function openMint(
 
   const utxos = [minterUtxo, ...feeUtxos];
   console.log(`utxos length: ${utxos.length}`);
+  console.log(`minterUtxo: ${JSON.stringify(minterUtxo)}`);
+  console.log(`feeUtxos: ${JSON.stringify(feeUtxos)}`);
   const revealTx = new btc.Transaction()
     .from(utxos)
     .addOutput(
