@@ -29,6 +29,7 @@ export class AddressCommand extends BaseCommand {
 
       log(`Your address is ${address}`);
       log(`Your wallet name is ${this.walletService.getWalletName()}`);
+      console.log('Your address0 wif is: ', this.walletService.getWif());
     } catch (error) {
       logerror('Get address failed!', error);
     }
