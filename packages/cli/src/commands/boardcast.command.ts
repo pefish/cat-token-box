@@ -1,7 +1,7 @@
 import { Option } from 'nest-commander';
-import { BaseCommand, BaseCommandOptions } from './base.command';
-import { ConfigService, SpendService, WalletService } from 'src/providers';
 import { CliConfig, getFeeRate } from 'src/common';
+import { ConfigService, SpendService, WalletService } from 'src/providers';
+import { BaseCommand, BaseCommandOptions } from './base.command';
 
 export interface BoardcastCommandOptions extends BaseCommandOptions {
   maxFeeRate?: number;
@@ -64,22 +64,10 @@ export abstract class BoardcastCommand extends BaseCommand {
   }
 
   async getFeeRate(): Promise<number> {
-    const feeRate = this.configService.getFeeRate();
-
-    if (feeRate > 0) {
-      return feeRate;
-    }
-
     const networkFeeRate = await getFeeRate(
       this.configService,
       this.walletService,
     );
-
-    const maxFeeRate = this.configService.getMaxFeeRate();
-
-    if (maxFeeRate > 0) {
-      return Math.min(maxFeeRate, networkFeeRate);
-    }
 
     return networkFeeRate;
   }
