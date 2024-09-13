@@ -30,6 +30,10 @@ interface MintCommandOptions extends BoardcastCommandOptions {
   new?: number;
 }
 
+function getRandomInt(max: number) {
+  return Math.floor(Math.random() * max);
+}
+
 @Command({
   name: 'mint',
   description: 'Mint a token',
@@ -98,11 +102,12 @@ export class MintCommand extends BoardcastCommand {
           }
 
           console.log('to getTokenMinter...');
+          const offset = getRandomInt(20);
           const minter = await getTokenMinter(
             this.configService,
             this.walletService,
             token,
-            5,
+            offset,
           );
 
           if (minter == null) {
