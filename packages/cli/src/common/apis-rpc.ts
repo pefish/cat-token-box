@@ -1,9 +1,9 @@
-import { UTXO } from 'scrypt-ts';
-import { Decimal } from 'decimal.js';
 import * as descriptors from '@bitcoinerlab/descriptors';
-import { logerror } from './log';
-import { ConfigService } from 'src/providers';
+import { Decimal } from 'decimal.js';
 import fetch from 'node-fetch-cjs';
+import { UTXO } from 'scrypt-ts';
+import { ConfigService } from 'src/providers';
+import { logerror } from './log';
 
 /**
  * only for localhost
@@ -181,6 +181,7 @@ export const rpc_getfeeRate = async function (
       }
     })
     .then((res: any) => {
+      console.log(config.getRpcUrl(walletName), res);
       if (
         res.result === null ||
         (res.result.errors && res.result.errors.length > 0)
