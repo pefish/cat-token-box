@@ -247,8 +247,10 @@ export async function openMint(
 
   const changeScript = btc.Script.fromAddress(address);
 
+  const utxos = [minterUtxo, ...feeUtxos];
+  console.log(`utxos length: ${utxos.length}`);
   const revealTx = new btc.Transaction()
-    .from([minterUtxo, ...feeUtxos])
+    .from(utxos)
     .addOutput(
       new btc.Transaction.Output({
         satoshis: 0,
@@ -358,6 +360,7 @@ export async function openMint(
     satoshis: int2ByteString(BigInt(changeAmount), 8n),
   };
 
+  console.log(`to sign...`);
   const sig = btc.crypto.Schnorr.sign(
     wallet.getTokenPrivateKey(),
     sighash.hash,
@@ -406,6 +409,7 @@ export async function openMint(
   }
 
   wallet.signTx(revealTx);
+  console.log(`to broadcast...`);
   const res = await broadcast(config, wallet, revealTx.uncheckedSerialize());
 
   if (res instanceof Error) {

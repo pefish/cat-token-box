@@ -155,6 +155,7 @@ export class MintCommand extends BoardcastCommand {
                   : amount;
             }
 
+            console.log('to openMint...');
             const mintTxIdOrErr = await openMint(
               this.configService,
               this.walletService,
