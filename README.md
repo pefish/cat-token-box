@@ -110,8 +110,10 @@ sudo chmod 777 docker/pgdata
 sudo docker-compose up -d
 
 
+sudo docker build -t pefish/tracker:latest .
+
 # 修改 rpc 密码
-sudo docker run -d --name tracker -p 3000:3000 --network tracker_default -e DATABASE_HOST="tracker-postgres-1" -e RPC_HOST="tracker-bitcoind-1" -e RPC_PASSWORD="" tracker:latest
+sudo docker run -d --name tracker -p 3000:3000 --network tracker_default -e DATABASE_HOST="tracker-postgres-1" -e RPC_HOST="tracker-bitcoind-1" -e RPC_PASSWORD="" pefish/tracker:latest
 
 
 cd packages/cli

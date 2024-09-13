@@ -108,7 +108,7 @@ export class MintCommand extends BoardcastCommand {
           if (minter == null) {
             continue;
           }
-          console.log(`minter: ${JSON.stringify(minter)}`);
+          console.log(`minter: ${minter}`);
 
           if (isOpenMinter(token.info.minterMd5)) {
             const minterState = minter.state.data;
