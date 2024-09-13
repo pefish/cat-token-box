@@ -1,6 +1,7 @@
-import { UTXO } from 'scrypt-ts';
 import fetch from 'node-fetch-cjs';
+import { UTXO } from 'scrypt-ts';
 
+import { ConfigService, WalletService } from 'src/providers';
 import {
   rpc_broadcast,
   rpc_getconfirmations,
@@ -8,9 +9,8 @@ import {
   rpc_getrawtransaction,
   rpc_listunspent,
 } from './apis-rpc';
-import { logerror, logwarn } from './log';
 import { btc } from './btc';
-import { ConfigService, WalletService } from 'src/providers';
+import { logerror, logwarn } from './log';
 
 export const getFeeRate = async function (
   config: ConfigService,
@@ -25,6 +25,7 @@ export const getFeeRate = async function (
   }
 
   const url = `${config.getApiHost()}/api/v1/fees/recommended`;
+  console.log(`feerate url: ${url}`);
   const feeRate: any = await fetch(url, config.withProxy())
     .then((res) => {
       if (res.status === 200) {
