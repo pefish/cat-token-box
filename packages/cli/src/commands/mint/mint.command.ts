@@ -5,6 +5,7 @@ import { Command, Option } from 'nest-commander';
 import {
   btc,
   getTokenMinter,
+  getTokenMinterCount,
   getTokens,
   getUtxos,
   isOpenMinter,
@@ -80,9 +81,13 @@ export class MintCommand extends BoardcastCommand {
           }
         }
 
-        const MAX_RETRY_COUNT = 100;
+        console.log('to getTokenMinterCount...');
+        const count = await getTokenMinterCount(
+          this.configService,
+          token.tokenId,
+        );
 
-        for (let index = 0; index < MAX_RETRY_COUNT; index++) {
+        for (let index = 100; index < count; index++) {
           console.log('retry');
           // await this.merge(token, address);
           let feeRate: number;
@@ -115,7 +120,7 @@ export class MintCommand extends BoardcastCommand {
 
           console.log('to getTokenMinter...');
           const offset = index;
-          console.log(`offset: ${offset}`);
+          console.log(`offset: ${offset} -> ${count}`);
           const minter = await getTokenMinter(
             this.configService,
             this.walletService,
