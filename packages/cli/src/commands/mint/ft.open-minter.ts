@@ -137,7 +137,7 @@ export function createOpenMinterState(
   splitAmountList: bigint[];
   minterStates: OpenMinterState[];
 } {
-  console.log(`token metadata: ${JSON.stringify(metadata, null, 2)}`);
+  // console.log(`token metadata: ${JSON.stringify(metadata, null, 2)}`);
   const scaledInfo = scaleConfig(metadata.info as OpenMinterTokenInfo);
 
   const premine = !isPriemined ? scaledInfo.premine : 0n;
@@ -206,7 +206,7 @@ export async function openMint(
     metadata,
     newMinter,
   );
-  console.log(`splitAmountList: ${JSON.stringify(splitAmountList, null, 2)}`);
+  // console.log(`splitAmountList: ${JSON.stringify(splitAmountList, null, 2)}`);
 
   for (let i = 0; i < minterStates.length; i++) {
     const minterState = minterStates[i];
@@ -260,9 +260,9 @@ export async function openMint(
 
   const utxos = [minterUtxo, ...feeUtxos];
   console.log(`utxos length: ${utxos.length}`);
-  console.log(`minterUtxo: ${JSON.stringify(minterUtxo, null, 2)}`);
-  console.log(`feeUtxos: ${JSON.stringify(feeUtxos, null, 2)}`);
-  console.log(`newState: ${JSON.stringify(newState, null, 2)}`);
+  // console.log(`minterUtxo: ${JSON.stringify(minterUtxo, null, 2)}`);
+  // console.log(`feeUtxos: ${JSON.stringify(feeUtxos, null, 2)}`);
+  // console.log(`newState: ${JSON.stringify(newState, null, 2)}`);
   const revealTx = new btc.Transaction()
     .from(utxos)
     .addOutput(
