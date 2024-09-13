@@ -181,7 +181,7 @@ export class MintCommand extends BoardcastCommand {
             );
             if (mintTxIdOrErr instanceof Error) {
               if (needRetry(mintTxIdOrErr as any)) {
-                console.log(mintTxIdOrErr.message);
+                console.error(mintTxIdOrErr.message);
                 // throw these error, so the caller can handle it.
                 log(`retry to mint token [${token.info.symbol}] ...`);
                 continue;
