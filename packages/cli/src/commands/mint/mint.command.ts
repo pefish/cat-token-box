@@ -106,6 +106,10 @@ export class MintCommand extends BoardcastCommand {
             continue;
           }
 
+          if (feeRate < 6) {
+            await this.merge(token, address);
+          }
+
           const feeUtxos = await this.getFeeUTXOs(address);
           if (feeUtxos.length === 0) {
             console.warn('Insufficient satoshis balance!');
@@ -199,9 +203,6 @@ export class MintCommand extends BoardcastCommand {
             console.log(
               `Minting ${unScaleByDecimals(amount, token.info.decimals)} ${token.info.symbol} tokens in txid: ${mintTxIdOrErr} ...`,
             );
-            if (feeRate < 10) {
-              await this.merge(token, address);
-            }
             return;
           } else {
             throw new Error('unkown minter!');
