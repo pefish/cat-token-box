@@ -307,6 +307,16 @@ export const rpc_importdescriptors = async function (
   const checksum = descriptors.checksum(desc);
 
   const timestamp = Math.ceil(new Date().getTime() / 1000);
+  console.log([
+    {
+      desc: `${desc}#${checksum}`,
+      active: false,
+      index: 0,
+      internal: false,
+      timestamp,
+      label: '',
+    },
+  ]);
   return fetch(config.getRpcUrl(walletName), {
     method: 'POST',
     headers: {
