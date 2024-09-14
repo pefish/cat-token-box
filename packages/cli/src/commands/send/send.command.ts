@@ -83,7 +83,6 @@ export class SendCommand extends BoardcastCommand {
             .from(feeUtxos)
             .feePerByte(feeRate)
             .change(receiver);
-          this.walletService.signTx(tx);
         } else {
           const d = new Decimal(inputs[1]).mul(Math.pow(10, 8));
           amount = BigInt(d.toString());
