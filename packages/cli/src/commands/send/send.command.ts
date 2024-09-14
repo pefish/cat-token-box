@@ -66,9 +66,7 @@ export class SendCommand extends BoardcastCommand {
 
       const feeRate = await this.getFeeRate();
 
-      console.log(options.id);
       if (!options.id) {
-        console.log(111);
         const feeUtxos = await getUtxos(
           this.configService,
           this.walletService,
@@ -80,7 +78,7 @@ export class SendCommand extends BoardcastCommand {
         }
 
         let tx;
-        if (inputs[1] == '0' || inputs[1] == '') {
+        if (!inputs[1] || inputs[1] == '0' || inputs[1] == '') {
           tx = new btc.Transaction()
             .from(feeUtxos)
             .feePerByte(feeRate)
