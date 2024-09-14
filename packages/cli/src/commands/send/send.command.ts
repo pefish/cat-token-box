@@ -21,7 +21,7 @@ import {
   BoardcastCommandOptions,
 } from '../boardcast.command';
 import { sendToken } from './ft';
-import { isMergeTxFail, mergeTokens } from './merge';
+import { isMergeTxFail, mergeTokens, waitTxConfirm } from './merge';
 import { pick, pickLargeFeeUtxo } from './pick';
 
 interface SendCommandOptions extends BoardcastCommandOptions {
@@ -101,8 +101,6 @@ export class SendCommand extends BoardcastCommand {
         }
 
         this.walletService.signTx(tx);
-        console.log(tx.uncheckedSerialize());
-        return;
         const txId = await broadcast(
           this.configService,
           this.walletService,
@@ -112,6 +110,7 @@ export class SendCommand extends BoardcastCommand {
         if (txId instanceof Error) {
           throw txId;
         }
+        waitTxConfirm(this.configService, txId, 1);
         return;
       }
       const token = await findTokenMetadataById(this.configService, options.id);
