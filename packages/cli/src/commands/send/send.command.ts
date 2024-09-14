@@ -68,6 +68,7 @@ export class SendCommand extends BoardcastCommand {
 
       console.log(options.id);
       if (!options.id) {
+        console.log(111);
         const feeUtxos = await getUtxos(
           this.configService,
           this.walletService,
