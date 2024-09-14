@@ -66,6 +66,7 @@ export class SendCommand extends BoardcastCommand {
 
       const feeRate = await this.getFeeRate();
 
+      console.log(options.id);
       if (!options.id) {
         const feeUtxos = await getUtxos(
           this.configService,
