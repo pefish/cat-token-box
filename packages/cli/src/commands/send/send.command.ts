@@ -87,7 +87,7 @@ export class SendCommand extends BoardcastCommand {
         } else {
           const d = new Decimal(inputs[1]).mul(Math.pow(10, 8));
           amount = BigInt(d.toString());
-          console.log(d.toString(), amount.toString());
+
           tx = new btc.Transaction()
             .from(feeUtxos)
             .addOutput(
