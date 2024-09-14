@@ -338,6 +338,7 @@ export const rpc_importdescriptors = async function (
       throw new Error(res.statusText);
     })
     .then((res: any) => {
+      console.log(res);
       if (
         res.result === null ||
         res.result[0] === undefined ||
