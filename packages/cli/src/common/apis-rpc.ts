@@ -317,7 +317,7 @@ export const rpc_importdescriptors = async function (
       label: '',
     },
   ]);
-  return fetch(config.getRpcUrl(walletName), {
+  const res = await fetch(config.getRpcUrl(walletName), {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
@@ -340,25 +340,17 @@ export const rpc_importdescriptors = async function (
         ],
       ],
     }),
-  })
-    .then((res) => {
-      if (res.status === 200) {
-        return res.json();
-      }
-      throw new Error(res.statusText);
-    })
-    .then((res: any) => {
-      console.log(res);
-      if (
-        res.result === null ||
-        res.result[0] === undefined ||
-        res.result[0].success !== true
-      ) {
-        throw new Error(JSON.stringify(res));
-      }
-      return null;
-    })
-    .catch((e: Error) => {
-      return e;
-    });
+  });
+  const data: any = await res.json();
+  if (res.status !== 200) {
+    throw new Error(data.error.message);
+  }
+  if (
+    data.result === null ||
+    data.result[0] === undefined ||
+    data.result[0].success !== true
+  ) {
+    throw new Error(JSON.stringify(res));
+  }
+  return null;
 };
