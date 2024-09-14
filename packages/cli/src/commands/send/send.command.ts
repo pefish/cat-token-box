@@ -1,7 +1,6 @@
 import { Inject } from '@nestjs/common';
 import Decimal from 'decimal.js';
 import { Command, InquirerService, Option } from 'nest-commander';
-import { int2ByteString } from 'scrypt-ts';
 import {
   broadcast,
   btc,
@@ -88,12 +87,12 @@ export class SendCommand extends BoardcastCommand {
         } else {
           const d = new Decimal(inputs[1]).mul(Math.pow(10, 8));
           amount = BigInt(d.toString());
-          console.log(int2ByteString(amount, 8n));
+          console.log(amount.toString());
           tx = new btc.Transaction()
             .from(feeUtxos)
             .addOutput(
               new btc.Transaction.Output({
-                satoshis: int2ByteString(amount, 8n),
+                satoshis: amount.toString(),
                 script: btc.Script.fromAddress(receiver),
               }),
             )
