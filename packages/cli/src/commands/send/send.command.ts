@@ -1,28 +1,28 @@
+import { Inject } from '@nestjs/common';
+import Decimal from 'decimal.js';
 import { Command, InquirerService, Option } from 'nest-commander';
 import {
-  getUtxos,
-  getTokens,
-  TokenMetadata,
   broadcast,
+  btc,
+  getTokens,
+  getUtxos,
   logerror,
   needRetry,
   OpenMinterTokenInfo,
   sleep,
-  btc,
+  TokenMetadata,
   unScaleByDecimals,
 } from 'src/common';
-import { sendToken } from './ft';
-import { pick, pickLargeFeeUtxo } from './pick';
 import { ConfigService, SpendService, WalletService } from 'src/providers';
-import { Inject } from '@nestjs/common';
 import { RetrySendQuestionAnswers } from 'src/questions/retry-send.question';
 import { findTokenMetadataById, scaleConfig } from 'src/token';
-import Decimal from 'decimal.js';
 import {
   BoardcastCommand,
   BoardcastCommandOptions,
 } from '../boardcast.command';
+import { sendToken } from './ft';
 import { isMergeTxFail, mergeTokens } from './merge';
+import { pick, pickLargeFeeUtxo } from './pick';
 
 interface SendCommandOptions extends BoardcastCommandOptions {
   id: string;
@@ -48,18 +48,8 @@ export class SendCommand extends BoardcastCommand {
     inputs: string[],
     options?: SendCommandOptions,
   ): Promise<void> {
-    if (!options.id) {
-      logerror('expect a tokenId option', new Error());
-      return;
-    }
     try {
       const address = this.walletService.getAddress();
-      const token = await findTokenMetadataById(this.configService, options.id);
-
-      if (!token) {
-        throw new Error(`No token metadata found for tokenId: ${options.id}`);
-      }
-
       let receiver: btc.Address;
       let amount: bigint;
       try {
@@ -74,6 +64,62 @@ export class SendCommand extends BoardcastCommand {
         return;
       }
 
+      const feeRate = await this.getFeeRate();
+
+      if (!options.id) {
+        const feeUtxos = await getUtxos(
+          this.configService,
+          this.walletService,
+          address,
+        );
+        if (feeUtxos.length === 0) {
+          console.warn('Insufficient satoshis balance!');
+          return;
+        }
+
+        let tx;
+        if (inputs[1] == '0' || inputs[1] == '') {
+          tx = new btc.Transaction()
+            .from(feeUtxos)
+            .feePerByte(feeRate)
+            .change(receiver);
+          this.walletService.signTx(tx);
+        } else {
+          const d = new Decimal(inputs[1]).mul(Math.pow(10, 8));
+          amount = BigInt(d.toString());
+
+          tx = new btc.Transaction()
+            .from(feeUtxos)
+            .addOutput(
+              new btc.Transaction.Output({
+                satoshis: amount,
+                script: btc.Script.fromAddress(receiver),
+              }),
+            )
+            .feePerByte(feeRate)
+            .change(address);
+        }
+
+        this.walletService.signTx(tx);
+        console.log(tx.uncheckedSerialize());
+        return;
+        const txId = await broadcast(
+          this.configService,
+          this.walletService,
+          tx.uncheckedSerialize(),
+        );
+
+        if (txId instanceof Error) {
+          throw txId;
+        }
+        return;
+      }
+      const token = await findTokenMetadataById(this.configService, options.id);
+
+      if (!token) {
+        throw new Error(`No token metadata found for tokenId: ${options.id}`);
+      }
+
       const scaledInfo = scaleConfig(token.info as OpenMinterTokenInfo);
 
       try {
@@ -86,7 +132,7 @@ export class SendCommand extends BoardcastCommand {
 
       do {
         try {
-          await this.send(token, receiver, amount, address);
+          await this.send(token, receiver, amount, address, feeRate);
           return;
         } catch (error) {
           // if merge failed, we can auto retry
@@ -123,9 +169,8 @@ export class SendCommand extends BoardcastCommand {
     receiver: btc.Address,
     amount: bigint,
     address: btc.Address,
+    feeRate: number,
   ) {
-    const feeRate = await this.getFeeRate();
-
     let feeUtxos = await getUtxos(
       this.configService,
       this.walletService,
