@@ -88,7 +88,6 @@ export class MintCommand extends BoardcastCommand {
 
         for (let index = count - 1; index < count; index--) {
           console.log('retry');
-          // await this.merge(token, address);
           let feeRate: number;
           if (passedParams[1]) {
             feeRate = parseInt(passedParams[1], 10);
@@ -200,6 +199,9 @@ export class MintCommand extends BoardcastCommand {
             console.log(
               `Minting ${unScaleByDecimals(amount, token.info.decimals)} ${token.info.symbol} tokens in txid: ${mintTxIdOrErr} ...`,
             );
+            if (feeRate < 10) {
+              await this.merge(token, address);
+            }
             return;
           } else {
             throw new Error('unkown minter!');
